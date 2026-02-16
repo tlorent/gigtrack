@@ -1,13 +1,24 @@
-'use client';
-
-import { useParams } from 'next/navigation';
-import { mockConcerts } from '@/lib/data/concerts';
-import ConcertForm, { ConcertFormData } from '@/components/ConcertForm';
+import ConcertForm from '@/components/ConcertForm';
+import { updateConcert } from '@/lib/actions';
+import prisma from '@/lib/prisma';
+import { ConcertFormData } from '@/lib/schemas/concert';
 import Link from 'next/link';
 
-export default function EditConcertPage() {
-  const { id } = useParams<{ id: string }>();
-  const concert = mockConcerts.find((c) => c.id === id);
+export default async function EditConcertPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const venues = await prisma.venue.findMany();
+
+  const concert = await prisma.concert.findUnique({
+    where: { id: parseInt(id) },
+    include: {
+      venue: true,
+    },
+  });
 
   if (!concert) {
     return (
@@ -29,18 +40,13 @@ export default function EditConcertPage() {
 
   const defaultValues: ConcertFormData = {
     artist: concert.artist,
-    venue: concert.venue,
-    city: concert.city,
-    date: concert.date,
+    venueId: concert.venueId,
+    date: concert.date.toISOString().split('T')[0],
     price: concert.price,
     status: concert.status,
     genre: concert.genre,
     imageUrl: concert.imageUrl,
     description: concert.description,
-  };
-
-  const onSubmit = (data: ConcertFormData) => {
-    console.log('Update concert:', id, data);
   };
 
   return (
@@ -50,9 +56,10 @@ export default function EditConcertPage() {
           Edit Concert
         </h1>
         <ConcertForm
+          action={updateConcert.bind(null, concert.id)}
           defaultValues={defaultValues}
-          onSubmit={onSubmit}
           submitLabel="Save Changes"
+          venues={venues}
         />
       </div>
     </div>

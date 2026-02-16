@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Venue {
+  id       Int       @id @default(autoincrement())
+  name     String
+  city     String
+  concerts Concert[]
+}
+
+model Concert {
+  id          Int      @id @default(autoincrement())
+  artist      String
+  date        DateTime
+  price       Float
+  status      Status   @default(SCHEDULED)
+  genre       String
+  imageUrl    String
+  description String   @db.Text
+  venueId     Int
+  venue       Venue    @relation(fields: [venueId], references: [id])
+}
+
+enum Status {
+  SCHEDULED
+  CANCELLED
+  SOLD_OUT
+}

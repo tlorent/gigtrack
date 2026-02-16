@@ -1,54 +1,29 @@
 'use client';
 
-import { useForm, SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-
-export const concertSchema = z.object({
-  artist: z.string().min(1, 'Artist name is required.'),
-  venue: z.string().min(1, 'Venue is required.'),
-  city: z.string().min(1, 'City is required.'),
-  date: z.string().min(1, 'Please select a date.'),
-  price: z
-    .number({ error: 'Price must be a number.' })
-    .positive('Price must be greater than zero.'),
-  status: z.enum(['scheduled', 'cancelled', 'sold_out'], {
-    error: 'Please select a valid status.',
-  }),
-  genre: z.string().min(1, 'Genre is required.'),
-  imageUrl: z
-    .string()
-    .min(1, 'Image URL is required.')
-    .url('Please enter a valid URL.'),
-  description: z
-    .string()
-    .min(10, 'Description must be at least 10 characters.'),
-});
-
-export type ConcertFormData = z.infer<typeof concertSchema>;
+import { useActionState } from 'react';
+import { State } from '@/lib/actions';
+import { ConcertFormData } from '@/lib/schemas/concert';
 
 type ConcertFormProps = {
-  defaultValues?: ConcertFormData;
-  onSubmit: SubmitHandler<ConcertFormData>;
+  action: (prevState: State, formData: FormData) => Promise<State>;
+  venues: { id: number; name: string; city: string }[];
   submitLabel: string;
+  defaultValues?: ConcertFormData;
 };
 
 export default function ConcertForm({
+  action,
   defaultValues,
-  onSubmit,
+  venues,
   submitLabel,
 }: ConcertFormProps) {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<ConcertFormData>({
-    resolver: zodResolver(concertSchema),
-    defaultValues,
+  const [state, formAction, isPending] = useActionState(action, {
+    errors: {},
+    message: null,
   });
 
   return (
-    <form className="font-body space-y-6" onSubmit={handleSubmit(onSubmit)}>
+    <form className="font-body space-y-6" action={formAction}>
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-semibold text-gray-300">
@@ -56,13 +31,15 @@ export default function ConcertForm({
           </label>
           <input
             type="text"
+            name="artist"
             className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
             placeholder="e.g. Arctic Monkeys"
-            {...register('artist')}
+            defaultValue={defaultValues?.artist}
+            required
           />
-          {errors.artist && (
+          {state.errors?.artist && (
             <p className="mt-1 text-sm text-red-400">
-              {errors.artist.message}
+              {state.errors.artist[0]}
             </p>
           )}
         </div>
@@ -73,52 +50,32 @@ export default function ConcertForm({
           </label>
           <input
             type="text"
+            name="genre"
             className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
             placeholder="e.g. Indie Rock"
-            {...register('genre')}
+            defaultValue={defaultValues?.genre}
+            required
           />
-          {errors.genre && (
-            <p className="mt-1 text-sm text-red-400">
-              {errors.genre.message}
-            </p>
+          {state.errors?.genre && (
+            <p className="mt-1 text-sm text-red-400">{state.errors.genre[0]}</p>
           )}
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-300">
-            Venue
-          </label>
-          <input
-            type="text"
-            className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
-            placeholder="e.g. Paradiso"
-            {...register('venue')}
-          />
-          {errors.venue && (
-            <p className="mt-1 text-sm text-red-400">
-              {errors.venue.message}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label className="mb-2 block text-sm font-semibold text-gray-300">
-            City
-          </label>
-          <input
-            type="text"
-            className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
-            placeholder="e.g. Amsterdam"
-            {...register('city')}
-          />
-          {errors.city && (
-            <p className="mt-1 text-sm text-red-400">
-              {errors.city.message}
-            </p>
-          )}
-        </div>
+      <div>
+        <label className="mb-2 block text-sm font-semibold text-gray-300">
+          Venue
+        </label>
+        <select name="venueId" defaultValue={defaultValues?.venueId}>
+          {venues.map((v) => (
+            <option key={v.id} value={v.id}>
+              {v.name} - {v.city}
+            </option>
+          ))}
+        </select>
+        {state.errors?.venueId && (
+          <p className="mt-1 text-sm text-red-400">{state.errors.venueId[0]}</p>
+        )}
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -128,13 +85,13 @@ export default function ConcertForm({
           </label>
           <input
             type="date"
+            name="date"
             className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white focus:border-purple-500 focus:outline-none"
-            {...register('date')}
+            defaultValue={defaultValues?.date}
+            required
           />
-          {errors.date && (
-            <p className="mt-1 text-sm text-red-400">
-              {errors.date.message}
-            </p>
+          {state.errors?.date && (
+            <p className="mt-1 text-sm text-red-400">{state.errors.date[0]}</p>
           )}
         </div>
 
@@ -144,14 +101,14 @@ export default function ConcertForm({
           </label>
           <input
             type="number"
+            name="price"
             className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
             placeholder="0"
-            {...register('price', { valueAsNumber: true })}
+            defaultValue={defaultValues?.price}
+            required
           />
-          {errors.price && (
-            <p className="mt-1 text-sm text-red-400">
-              {errors.price.message}
-            </p>
+          {state.errors?.price && (
+            <p className="mt-1 text-sm text-red-400">{state.errors.price[0]}</p>
           )}
         </div>
 
@@ -160,16 +117,17 @@ export default function ConcertForm({
             Status
           </label>
           <select
+            name="status"
             className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white focus:border-purple-500 focus:outline-none"
-            {...register('status')}
+            defaultValue={defaultValues?.status ?? 'SCHEDULED'}
           >
-            <option value="scheduled">Scheduled</option>
-            <option value="sold_out">Sold Out</option>
-            <option value="cancelled">Cancelled</option>
+            <option value="SCHEDULED">Scheduled</option>
+            <option value="SOLD_OUT">Sold Out</option>
+            <option value="CANCELLED">Cancelled</option>
           </select>
-          {errors.status && (
+          {state.errors?.status && (
             <p className="mt-1 text-sm text-red-400">
-              {errors.status.message}
+              {state.errors.status[0]}
             </p>
           )}
         </div>
@@ -181,13 +139,15 @@ export default function ConcertForm({
         </label>
         <input
           type="url"
+          name="imageUrl"
           className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
           placeholder="https://..."
-          {...register('imageUrl')}
+          defaultValue={defaultValues?.imageUrl}
+          required
         />
-        {errors.imageUrl && (
+        {state.errors?.imageUrl && (
           <p className="mt-1 text-sm text-red-400">
-            {errors.imageUrl.message}
+            {state.errors.imageUrl[0]}
           </p>
         )}
       </div>
@@ -198,22 +158,27 @@ export default function ConcertForm({
         </label>
         <textarea
           rows={4}
+          name="description"
           className="w-full rounded border border-purple-700/50 bg-gray-900/60 px-4 py-3 text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none"
           placeholder="Describe the concert..."
-          {...register('description')}
+          defaultValue={defaultValues?.description}
+          required
         />
-        {errors.description && (
+        {state.errors?.description && (
           <p className="mt-1 text-sm text-red-400">
-            {errors.description.message}
+            {state.errors.description[0]}
           </p>
         )}
       </div>
 
+      {state.message && <p className="text-sm text-red-400">{state.message}</p>}
+
       <button
         type="submit"
-        className="w-full cursor-pointer rounded bg-linear-to-r from-orange-600 to-red-600 px-8 py-4 font-bold text-white transition hover:from-orange-700 hover:to-red-700"
+        disabled={isPending}
+        className="w-full cursor-pointer rounded bg-linear-to-r from-orange-600 to-red-600 px-8 py-4 font-bold text-white transition hover:from-orange-700 hover:to-red-700 disabled:opacity-50"
       >
-        {submitLabel}
+        {isPending ? 'Saving...' : submitLabel}
       </button>
     </form>
   );

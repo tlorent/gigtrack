@@ -1,8 +1,8 @@
-import { mockConcerts } from '@/lib/data/concerts';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowLeft, MapPin, Calendar, Tag } from 'lucide-react';
+import prisma from '@/lib/prisma';
 
 export default async function ConcertDetailPage({
   params,
@@ -10,7 +10,13 @@ export default async function ConcertDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const concert = mockConcerts.find((c) => c.id === id);
+
+  const concert = await prisma.concert.findUnique({
+    where: { id: parseInt(id) },
+    include: {
+      venue: true,
+    },
+  });
 
   if (!concert) {
     notFound();
@@ -50,9 +56,9 @@ export default async function ConcertDetailPage({
               </div>
               <span
                 className={`font-body rounded-full px-4 py-2 text-sm font-bold ${
-                  concert.status === 'sold_out'
+                  concert.status === 'SOLD_OUT'
                     ? 'bg-red-500 text-white'
-                    : concert.status === 'cancelled'
+                    : concert.status === 'CANCELLED'
                       ? 'bg-gray-500 text-white'
                       : 'bg-green-500 text-white'
                 }`}
@@ -68,8 +74,8 @@ export default async function ConcertDetailPage({
                   <h2 className="mb-1 text-sm font-bold text-gray-400">
                     VENUE
                   </h2>
-                  <p className="text-lg font-semibold">{concert.venue}</p>
-                  <p className="text-gray-300">{concert.city}</p>
+                  <p className="text-lg font-semibold">{concert.venue.name}</p>
+                  <p className="text-gray-300">{concert.venue.city}</p>
                 </div>
               </div>
 
@@ -77,7 +83,13 @@ export default async function ConcertDetailPage({
                 <Calendar className="mt-1 h-6 w-6 text-orange-400" />
                 <div>
                   <h2 className="mb-1 text-sm font-bold text-gray-400">DATE</h2>
-                  <p className="text-lg font-semibold">{concert.date}</p>
+                  <p className="text-lg font-semibold">
+                    {concert.date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </p>
                 </div>
               </div>
 

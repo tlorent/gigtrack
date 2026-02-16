@@ -10,7 +10,11 @@ const defaultLinks: NavLink[] = [
   { href: '/concerts', label: 'Browse Concerts' },
 ];
 
-export default function Navigation({ links = defaultLinks }: { links?: NavLink[] }) {
+export default function Navigation({
+  links = defaultLinks,
+}: {
+  links?: NavLink[];
+}) {
   return (
     <nav className="z-50 w-full bg-linear-to-r from-purple-900/50 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 font-bold">
