@@ -1,8 +1,13 @@
-import { mockConcerts } from '@/lib/data/concerts';
-import { Pencil, Trash2 } from 'lucide-react';
+import DeleteConcertButton from '@/components/DeleteConcertButton';
+import prisma from '@/lib/prisma';
+import { Pencil } from 'lucide-react';
 import Link from 'next/link';
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const concerts = await prisma.concert.findMany({
+    include: { venue: true },
+  });
+
   return (
     <div className="min-h-screen bg-linear-to-b from-purple-900 to-black py-12">
       <div className="mx-auto max-w-7xl px-6">
@@ -24,7 +29,7 @@ export default function AdminPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-purple-800/40">
-              {mockConcerts.map((concert) => (
+              {concerts.map((concert) => (
                 <tr
                   key={concert.id}
                   className="bg-gray-900/60 transition hover:bg-purple-900/30"
@@ -32,23 +37,33 @@ export default function AdminPage() {
                   <td className="px-6 py-4 font-semibold whitespace-nowrap text-white">
                     {concert.artist}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap">{concert.date}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{concert.venue}</td>
-                  <td className="px-6 py-4 whitespace-nowrap">{concert.city}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {concert.date.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {concert.venue.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {concert.venue.city}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     €{concert.price}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span
                       className={`inline-block rounded-full px-3 py-1 text-xs font-bold ${
-                        concert.status === 'sold_out'
+                        concert.status === 'SOLD_OUT'
                           ? 'bg-red-500/20 text-red-400'
-                          : concert.status === 'cancelled'
+                          : concert.status === 'CANCELLED'
                             ? 'bg-gray-500/20 text-gray-400'
                             : 'bg-green-500/20 text-green-400'
                       }`}
                     >
-                      {concert.status.replace('_', ' ').toUpperCase()}
+                      {concert.status.replace('_', ' ')}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right whitespace-nowrap">
@@ -59,9 +74,7 @@ export default function AdminPage() {
                       >
                         <Pencil className="h-4 w-4" />
                       </Link>
-                      <button className="rounded p-2 text-gray-400 transition hover:bg-red-900/40 hover:text-red-400">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <DeleteConcertButton concertId={concert.id} />
                     </div>
                   </td>
                 </tr>

@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Search, ChevronDown } from 'lucide-react';
-import { mockConcerts } from '@/lib/data/concerts';
 
 function FilterSection({
   title,
@@ -34,7 +33,15 @@ function FilterSection({
   );
 }
 
-export default function ConcertFilters() {
+export default function ConcertFilters({
+  months,
+  venues,
+  genres,
+}: {
+  months: string[];
+  venues: string[];
+  genres: string[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -50,11 +57,6 @@ export default function ConcertFilters() {
   useEffect(() => {
     setSearchValue(currentSearch);
   }, [currentSearch]);
-
-  // Extract unique values
-  const months = [...new Set(mockConcerts.map((c) => c.date.substring(0, 7)))];
-  const venues = [...new Set(mockConcerts.map((c) => c.venue))];
-  const genres = [...new Set(mockConcerts.map((c) => c.genre))];
 
   const updateFilter = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams.toString());

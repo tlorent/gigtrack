@@ -1,11 +1,9 @@
-'use client';
+import ConcertForm from '@/components/ConcertForm';
+import { createConcert } from '@/lib/actions';
+import prisma from '@/lib/prisma';
 
-import ConcertForm, { ConcertFormData } from '@/components/ConcertForm';
-
-export default function NewConcertPage() {
-  const onSubmit = (data: ConcertFormData) => {
-    console.log('Create concert:', data);
-  };
+export default async function NewConcertPage() {
+  const venues = await prisma.venue.findMany();
 
   return (
     <div className="min-h-screen bg-linear-to-b from-purple-900 to-black py-12">
@@ -13,7 +11,11 @@ export default function NewConcertPage() {
         <h1 className="font-heading mb-8 text-4xl font-bold text-white">
           Add Concert
         </h1>
-        <ConcertForm onSubmit={onSubmit} submitLabel="Add Concert" />
+        <ConcertForm
+          action={createConcert}
+          submitLabel="Add Concert"
+          venues={venues}
+        />
       </div>
     </div>
   );

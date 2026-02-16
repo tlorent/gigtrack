@@ -1,7 +1,14 @@
 import Image from 'next/image';
-import type { Concert } from '@/lib/data/concerts';
+import type { ConcertModel as Concert } from '@/app/generated/prisma/models/Concert';
+import type { VenueModel as Venue } from '@/app/generated/prisma/models/Venue';
 
-export default function FeaturedConcert({ concert }: { concert: Concert }) {
+type ConcertWithVenue = Concert & { venue: Venue };
+
+export default function FeaturedConcert({
+  concert,
+}: {
+  concert: ConcertWithVenue;
+}) {
   return (
     <div className="h-full rounded bg-gray-900 p-6 transition group-hover:bg-gray-800">
       <div className="mb-4 flex items-center gap-4">
@@ -23,9 +30,15 @@ export default function FeaturedConcert({ concert }: { concert: Concert }) {
       </div>
 
       <div className="font-body space-y-1 text-gray-300">
-        <p className="font-semibold">{concert.venue}</p>
-        <p className="text-sm">{concert.city}</p>
-        <p className="text-sm">{concert.date}</p>
+        <p className="font-semibold">{concert.venue.name}</p>
+        <p className="text-sm">{concert.venue.city}</p>
+        <p className="text-sm">
+          {concert.date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </p>
       </div>
 
       <div className="mt-4 flex items-center justify-between">
@@ -34,14 +47,14 @@ export default function FeaturedConcert({ concert }: { concert: Concert }) {
         </span>
         <span
           className={`font-body rounded-full px-3 py-1 text-xs font-bold ${
-            concert.status === 'sold_out'
+            concert.status === 'SOLD_OUT'
               ? 'bg-red-500 text-white'
-              : concert.status === 'cancelled'
+              : concert.status === 'CANCELLED'
                 ? 'bg-gray-500 text-white'
                 : 'bg-green-500 text-white'
           }`}
         >
-          {concert.status.replace('_', ' ').toUpperCase()}
+          {concert.status.replace('_', ' ')}
         </span>
       </div>
     </div>
