@@ -1,6 +1,6 @@
 import Image from 'next/image';
-import type { ConcertModel as Concert } from '@/app/generated/prisma/models/Concert';
-import type { VenueModel as Venue } from '@/app/generated/prisma/models/Venue';
+import type { ConcertModel as Concert } from '@/generated/prisma/models/Concert';
+import type { VenueModel as Venue } from '@/generated/prisma/models/Venue';
 
 type ConcertWithVenue = Concert & { venue: Venue };
 
