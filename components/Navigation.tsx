@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import UserMenu from '@/components/UserMenu';
 
 type NavLink = {
   href: string;
@@ -16,7 +17,7 @@ export default function Navigation({
   links?: NavLink[];
 }) {
   return (
-    <nav className="z-50 w-full bg-linear-to-r from-purple-900/50 backdrop-blur-sm">
+    <nav className="z-50 w-full bg-linear-to-r from-purple-900 to-purple-900/80 backdrop-blur-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 font-bold">
         <Link href="/">
           <Image src="/logo.png" alt="GigTrack" width={35} height={35} />
@@ -31,6 +32,7 @@ export default function Navigation({
               {link.label}
             </Link>
           ))}
+          <UserMenu />
         </div>
       </div>
     </nav>
