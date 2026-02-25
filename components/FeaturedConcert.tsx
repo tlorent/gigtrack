@@ -1,13 +1,21 @@
 import Image from 'next/image';
+import { Heart } from 'lucide-react';
 import type { ConcertModel as Concert } from '@/generated/prisma/models/Concert';
 import type { VenueModel as Venue } from '@/generated/prisma/models/Venue';
+import FavoriteButton from '@/components/ui/FavoriteButton';
 
 type ConcertWithVenue = Concert & { venue: Venue };
 
 export default function FeaturedConcert({
   concert,
+  isFavorited,
+  isLoggedIn,
+  favoriteCount,
 }: {
   concert: ConcertWithVenue;
+  isFavorited: boolean;
+  isLoggedIn: boolean;
+  favoriteCount: number;
 }) {
   return (
     <div className="h-full rounded bg-gray-900 p-6 transition group-hover:bg-gray-800">
@@ -42,20 +50,33 @@ export default function FeaturedConcert({
       </div>
 
       <div className="mt-4 flex items-center justify-between">
-        <span className="font-body text-2xl font-bold text-white">
-          €{concert.price}
-        </span>
-        <span
-          className={`font-body rounded-full px-3 py-1 text-xs font-bold ${
-            concert.status === 'SOLD_OUT'
-              ? 'bg-red-500 text-white'
-              : concert.status === 'CANCELLED'
-                ? 'bg-gray-500 text-white'
-                : 'bg-green-500 text-white'
-          }`}
-        >
-          {concert.status.replace('_', ' ')}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="font-body text-2xl font-bold text-white">
+            €{concert.price}
+          </span>
+          <span
+            className={`font-body rounded-full px-3 py-1 text-xs font-bold ${
+              concert.status === 'SOLD_OUT'
+                ? 'bg-red-500 text-white'
+                : concert.status === 'CANCELLED'
+                  ? 'bg-gray-500 text-white'
+                  : 'bg-green-500 text-white'
+            }`}
+          >
+            {concert.status.replace('_', ' ')}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="font-body flex items-center gap-1 text-xs text-gray-400">
+            <Heart className="h-3 w-3 fill-red-500 stroke-red-500" />
+            {favoriteCount}
+          </span>
+          <FavoriteButton
+            concertId={concert.id}
+            isFavorited={isFavorited}
+            isLoggedIn={isLoggedIn}
+          />
+        </div>
       </div>
     </div>
   );

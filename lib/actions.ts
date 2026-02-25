@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import prisma from '@/lib/prisma';
 import { ConcertSchema } from './schemas/concert';
+import { getSession } from './session';
 
 const CreateConcert = ConcertSchema;
 const UpdateConcert = ConcertSchema;
@@ -118,4 +119,42 @@ export async function deleteConcert(id: number) {
 
   revalidatePath('/admin');
   redirect('/admin');
+}
+
+export async function favoriteConcert(concertId: number) {
+  const session = await getSession();
+
+  if (!session) {
+    throw Error('No user session active.');
+  }
+
+  await prisma.favorite.create({
+    data: {
+      concertId,
+      userId: session.user.id,
+    },
+  });
+
+  revalidatePath('/concerts');
+  revalidatePath(`/concerts/${concertId}`);
+}
+
+export async function unfavoriteConcert(concertId: number) {
+  const session = await getSession();
+
+  if (!session) {
+    throw Error('No user session active.');
+  }
+
+  await prisma.favorite.delete({
+    where: {
+      userId_concertId: {
+        userId: session.user.id,
+        concertId,
+      },
+    },
+  });
+
+  revalidatePath('/concerts');
+  revalidatePath(`/concerts/${concertId}`);
 }

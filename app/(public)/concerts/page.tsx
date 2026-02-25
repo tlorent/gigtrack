@@ -2,6 +2,7 @@ import Link from 'next/link';
 import FeaturedConcert from '@/components/FeaturedConcert';
 import ConcertFilters from '@/components/ConcertFilters';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
 
 export default async function ConcertsPage({
   searchParams,
@@ -14,8 +15,9 @@ export default async function ConcertsPage({
   }>;
 }) {
   const params = await searchParams;
+  const session = await getSession();
 
-  const [allConcerts, venues, concerts] = await Promise.all([
+  const [allConcerts, venues, concerts, favorites] = await Promise.all([
     prisma.concert.findMany({
       select: { date: true, genre: true },
     }),
@@ -42,7 +44,26 @@ export default async function ConcertsPage({
         }),
       },
     }),
+    session
+      ? prisma.favorite.findMany({
+          where: { userId: session.user.id },
+          select: { concertId: true },
+        })
+      : [],
   ]);
+
+  const favoritedIds = new Set(favorites.map((f) => f.concertId));
+
+  const groupByFavorites = await prisma.favorite.groupBy({
+    by: ['concertId'],
+    _count: { concertId: true },
+    where: { concertId: { in: concerts.map((c) => c.id) } },
+  });
+
+  const favoriteCounts = new Map<number, number>();
+  groupByFavorites.forEach((row) => {
+    favoriteCounts.set(row.concertId, row._count.concertId);
+  });
 
   const months = [
     ...new Set(
@@ -76,7 +97,12 @@ export default async function ConcertsPage({
                 key={concert.id}
                 className="group overflow-hidden rounded bg-linear-to-br from-purple-600 to-orange-500 p-1"
               >
-                <FeaturedConcert concert={concert} />
+                <FeaturedConcert
+                  concert={concert}
+                  isFavorited={favoritedIds.has(concert.id)}
+                  isLoggedIn={!!session}
+                  favoriteCount={favoriteCounts.get(concert.id) ?? 0}
+                />
               </Link>
             ))}
           </div>

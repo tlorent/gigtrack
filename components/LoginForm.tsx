@@ -59,7 +59,7 @@ export default function LoginForm() {
       title="Welcome back"
       subtitle="Log in to your GigTrack account."
       footer={{
-        text: "Don\u2019t have an account?",
+        text: 'Don\u2019t have an account?',
         linkText: 'Sign up',
         href: '/register',
       }}

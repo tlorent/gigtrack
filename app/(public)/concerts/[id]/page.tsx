@@ -1,8 +1,10 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, MapPin, Calendar, Tag } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Tag, Heart } from 'lucide-react';
 import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
+import FavoriteButton from '@/components/ui/FavoriteButton';
 
 export default async function ConcertDetailPage({
   params,
@@ -10,6 +12,8 @@ export default async function ConcertDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+
+  const session = await getSession();
 
   const concert = await prisma.concert.findUnique({
     where: { id: parseInt(id) },
@@ -21,6 +25,21 @@ export default async function ConcertDetailPage({
   if (!concert) {
     notFound();
   }
+
+  const isFavorited = session
+    ? !!(await prisma.favorite.findUnique({
+        where: {
+          userId_concertId: {
+            userId: session.user.id,
+            concertId: concert.id,
+          },
+        },
+      }))
+    : false;
+
+  const favoriteCount: number = await prisma.favorite.count({
+    where: { concertId: concert.id },
+  });
 
   return (
     <div className="min-h-screen bg-linear-to-b from-purple-900 to-black">
@@ -54,17 +73,26 @@ export default async function ConcertDetailPage({
                   {concert.artist}
                 </h1>
               </div>
-              <span
-                className={`font-body rounded-full px-4 py-2 text-sm font-bold ${
-                  concert.status === 'SOLD_OUT'
-                    ? 'bg-red-500 text-white'
-                    : concert.status === 'CANCELLED'
-                      ? 'bg-gray-500 text-white'
-                      : 'bg-green-500 text-white'
-                }`}
-              >
-                {concert.status.replace('_', ' ').toUpperCase()}
-              </span>
+              <div className="flex items-center gap-3">
+                <span
+                  className={`font-body rounded-full px-4 py-2 text-sm font-bold ${
+                    concert.status === 'SOLD_OUT'
+                      ? 'bg-red-500 text-white'
+                      : concert.status === 'CANCELLED'
+                        ? 'bg-gray-500 text-white'
+                        : 'bg-green-500 text-white'
+                  }`}
+                >
+                  {concert.status.replace('_', ' ').toUpperCase()}
+                </span>
+                {session && (
+                  <FavoriteButton
+                    concertId={concert.id}
+                    isFavorited={isFavorited}
+                    isLoggedIn={!!session}
+                  />
+                )}
+              </div>
             </div>
 
             <div className="font-body mb-8 grid gap-6 md:grid-cols-3">
@@ -109,6 +137,12 @@ export default async function ConcertDetailPage({
               <p className="font-body leading-relaxed text-gray-300">
                 {concert.description}
               </p>
+            </div>
+
+            <div className="font-body flex items-center gap-2 text-sm text-gray-400">
+              <Heart className="h-4 w-4 fill-red-500 stroke-red-500" />
+              Favorited by {favoriteCount}{' '}
+              {favoriteCount === 1 ? 'person' : 'people'}
             </div>
           </div>
         </div>

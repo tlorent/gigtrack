@@ -28,6 +28,12 @@ export default function UserMenu() {
 
   return (
     <div className="flex items-center gap-3">
+      <Link
+        href="/my-concerts"
+        className="text-white transition hover:text-yellow-300"
+      >
+        My Concerts
+      </Link>
       <img
         src={avatarUrl}
         alt={session.user.name}
@@ -35,7 +41,6 @@ export default function UserMenu() {
         height={32}
         className="rounded-full"
       />
-      <span className="text-sm text-white">{session.user.name}</span>
       <button
         onClick={async () => {
           await authClient.signOut();

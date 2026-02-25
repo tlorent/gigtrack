@@ -7,9 +7,7 @@ type NavLink = {
   label: string;
 };
 
-const defaultLinks: NavLink[] = [
-  { href: '/concerts', label: 'Browse Concerts' },
-];
+const defaultLinks: NavLink[] = [{ href: '/concerts', label: 'View Concerts' }];
 
 export default function Navigation({
   links = defaultLinks,
