@@ -31,7 +31,7 @@ export default async function EditConcertPage({
             href="/admin"
             className="font-body text-orange-400 transition hover:text-orange-300"
           >
-            Back to dashboard
+            Back to admin dashboard
           </Link>
         </div>
       </div>

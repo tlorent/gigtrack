@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Sofia_Sans_Condensed, Work_Sans, Fraunces } from 'next/font/google';
 import './globals.css';
 import Footer from '@/components/Footer';
+import Navigation from '@/components/Navigation';
+import { getAdmin } from '@/lib/admin';
 
 const headingFont = Sofia_Sans_Condensed({
   variable: '--font-heading',
@@ -26,16 +28,19 @@ export const metadata: Metadata = {
   description: 'Never miss a concert again.',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const isAdmin = await getAdmin();
+
   return (
     <html lang="en">
       <body
         className={`${sectionFont.variable} ${headingFont.variable} ${bodyFont.variable} flex min-h-screen flex-col antialiased`}
       >
+        <Navigation isAdmin={isAdmin} />
         {children}
         <Footer />
       </body>

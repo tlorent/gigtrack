@@ -1,24 +1,16 @@
-import Navigation from '@/components/Navigation';
+import { getAdmin } from '@/lib/admin';
 import { redirect } from 'next/navigation';
 
-const adminLinks = [
-  { href: '/admin', label: 'View Concerts' },
-  { href: '/admin/concerts/new', label: 'Add Concert' },
-];
-
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  if (process.env.ADMIN_ENABLED !== 'true') {
+  const isAdmin = await getAdmin();
+
+  if (!isAdmin) {
     redirect('/');
   }
 
-  return (
-    <>
-      <Navigation links={adminLinks} />
-      <main>{children}</main>
-    </>
-  );
+  return <main>{children}</main>;
 }
