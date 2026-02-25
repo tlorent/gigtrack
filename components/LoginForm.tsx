@@ -44,6 +44,7 @@ export default function LoginForm() {
           setLoading(true);
         },
         onSuccess: () => {
+          router.refresh();
           router.push('/concerts');
         },
         onError: (ctx) => {

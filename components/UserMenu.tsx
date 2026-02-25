@@ -4,8 +4,7 @@
 import { authClient } from '@/lib/auth-client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-
-export default function UserMenu() {
+export default function UserMenu({ isAdmin = false }: { isAdmin?: boolean }) {
   const { data: session, isPending } = authClient.useSession();
   const router = useRouter();
 
@@ -15,25 +14,33 @@ export default function UserMenu() {
 
   if (!session) {
     return (
-      <Link
-        href="/login"
-        className="text-white transition hover:text-yellow-300"
-      >
-        Log In
-      </Link>
+      <>
+        <Link href="/concerts" className="text-white transition hover:text-yellow-300">
+          Concerts
+        </Link>
+        <Link href="/login" className="text-white transition hover:text-yellow-300">
+          Log In
+        </Link>
+      </>
     );
   }
 
   const avatarUrl = `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(session.user.id)}`;
 
   return (
-    <div className="flex items-center gap-3">
-      <Link
-        href="/my-concerts"
-        className="text-white transition hover:text-yellow-300"
-      >
-        My Concerts
+    <>
+      <Link href="/concerts" className="text-white transition hover:text-yellow-300">
+        Concerts
       </Link>
+      {isAdmin ? (
+        <Link href="/admin" className="text-white transition hover:text-yellow-300">
+          Admin
+        </Link>
+      ) : (
+        <Link href="/my-concerts" className="text-white transition hover:text-yellow-300">
+          My Concerts
+        </Link>
+      )}
       <img
         src={avatarUrl}
         alt={session.user.name}
@@ -50,6 +57,6 @@ export default function UserMenu() {
       >
         Log out
       </button>
-    </div>
+    </>
   );
 }
